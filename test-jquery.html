@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("button").click(function () {
+                $.ajax({
+                    method: "GET",
+                    url: 'https://oslobysykkel.no/api/v1/stations',
+                    dataType: 'jsonp',
+                    headers: {
+                        'Client-Identifier': '78fed72c6ee33a442b3d3060e095829a'
+                    },
+                    data: {
+                        format: 'json'
+                    },
+                    error: function () {
+                        $('#status').html('<p>An error has occurred</p>');
+                    },
+                    success: function (data) {
+                        $('#status').html('<p>YEAH got the data</p>');
+                    }
+                });
+
+            });
+        });
+
+    </script>
+</head>
+
+<body>
+
+    <h1>test-jquery</h1>
+    <p>Test for getting data from https://developer.oslobysykkel.no/api</p>
+    Test result:
+    <div id="status"></div>
+    <button>Click to test</button>
+
+    <p>If the URL is https://ghibliapi.herokuapp.com/films then it works.</p>
+    <p>If it is https://oslobysykkel.no/api/v1/stations then it does not work</p>
+
+    <p>this curl works:</p>
+    <p> curl -H "Client-Identifier: 78fed72c6ee33a442b3d3060e095829a" \ https://oslobysykkel.no/api/v1/stations
+    </p>
+
+</body>
+
+</html>

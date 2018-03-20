@@ -1,0 +1,823 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Busskart - Laussnøekspressen</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+
+    <meta property="og:title" content="Busskart - Laussnøekspressen" />
+    <meta property="og:description" content="Sjå i sanntid kvar på kartet bussane som køyrer Laussnøekspressen er." />
+    <meta propert="og:url" content="https://livarbergheim.no/fjellsport/" />
+    <meta property="og:image" content="https://livarbergheim.no/fjellsport/busskart.png" />
+
+    <style>
+      html, body, #map {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+
+      /* jQuery dialogs */
+      div.ui-dialog {
+          z-index: 1000;
+      }
+      .ui-widget-overlay {
+          z-index:1000;
+          opacity:0.8;
+      }
+
+.fa-rotate-45 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.fa-rotate-135 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
+  -webkit-transform: rotate(135deg);
+  -ms-transform: rotate(135deg);
+  transform: rotate(135deg);
+}
+
+.fa-rotate-225 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
+  -webkit-transform: rotate(225deg);
+  -ms-transform: rotate(225deg);
+  transform: rotate(225deg);
+}
+
+.fa-rotate-315 {
+  -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=1)";
+  -webkit-transform: rotate(315deg);
+  -ms-transform: rotate(315deg);
+  transform: rotate(315deg);
+}
+
+.fai {
+  float: none !important;
+  margin-right: 0px !important;
+  width: unset !important;
+  opacity: 1.0 !important;
+}
+    </style>
+
+    <!-- all libraries updated — 2017-04-15 -->
+
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+
+<!--     <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" />
+ -->
+
+ 
+    <!-- <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script> -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>    
+
+    <!--terchris <link rel="stylesheet" href="libs/leaflet.awesome-markers.css"> -->
+    <link href="https://fastcdn.org/Leaflet.awesome-markers/2.0.1/leaflet.awesome-markers.css" rel="stylesheet">
+
+    
+    <link rel="stylesheet" href="bysykkel.css">
+
+
+
+<!-- terchris DONT THINK THIS IS NEEDED -->
+    <link rel="stylesheet" type="text/css" href="leaflet-jquerydialog.css" />
+    <script type="text/javascript" src="leaflet-jquerydialog.js"></script>
+
+    <!-- Not cloud-hosted: -->
+
+    <!--terchris <script src="libs/leaflet-realtime.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-realtime/2.1.1/leaflet-realtime.js"></script>
+    
+
+    <!--terchris  <script src="libs/leaflet.awesome-markers.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.min.js"></script>
+
+    <script src="L.TileLayer.Kartverket.js"></script>
+
+    <!--terchris <script src="libs/leaflet-hash.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-hash/0.2.1/leaflet-hash.js"></script>
+
+
+    <!--terchris <link rel="stylesheet" href="libs/L.Control.Locate.min.css" /> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.62.0/L.Control.Locate.min.js"></script>
+
+    <!--terchris <script src="libs/L.Control.Locate.min.js" charset="utf-8"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-locatecontrol/0.62.0/L.Control.Locate.min.js"></script>
+
+
+  </head>
+  <body>
+    <div id="map"></div>
+
+<!-- the dialog that we'll be opening with the control -->
+<div id="dialog-about" title="About">
+    <p>This control simply opens a Bootstrap modal. This is great for placing Help links, for making legends that don't consume screen space, or even contact and feedback forms.</p>
+    <p>For more information, see <a href="https://github.com/gregallensworth/L.Control.BootstrapModal" target="_blank">check out the repo</a>.</p>    
+</div>
+
+<!-- the dialog that we'll be opening with the control -->
+<div id="dialog-help" title="Om sanntidskartet">
+
+    <p><b>BLÅ markør</b> på kartet er stoppestadar.</p>
+
+    <p><b>Buss-markør</b> er har eit buss-ikon — <i class="fa fa-bus" aria-hidden="true"></i> — og er vanlegvis grønn.</p>
+
+    <p><b>Trykk på ein kart-markør</b> for å få opp enten haldeplass-namnet eller meir info om bussen.</p>
+
+    <p><b>Sjå din posisjon</b>. Trykk på knappen oppe til venstre med ikonet <i class="fa fa-map-marker" aria-hidden="true"></i>.</p>
+
+    <p><b>Oppdateringsfrekvens</b><br/>Buss-markørane vert oppdatert kvart 5. sekund. Ein buss-markør vert halvvegs gjennomsiktig dersom posisisjonen er meir enn 15 sekund gammal. Dersom buss-posisjonen er meir enn 1 minutt gammal, blir markøren grå.</p>
+
+    <p><b>Spørsmål og tilbakemeldingar på denne kart-appen?</b><br/>Send e-post til <a href="mailto:livar.bergheim@gmail.com?subject=Busskart">Livar.Bergheim@gmail.com</a>.</p>
+
+    <p><b>Om kartet</b><br/><a href="https://www.fjellsportfestivalen.no/">Fjellsportfestivalen</a> har fått på plass dette sanntidskartet for <a href="https://www.fjellsportfestivalen.no/transport/#block-yui_3_17_2_6_1519204147500_7351">Laussnøekspressen</a>.</p>
+
+    <p>Systemet er sett opp av Livar Bergheim (frivilleg for Fjellsportfestivalen). Det er plassert mobiltelefonar ut i bussane. Desse sender kontinuerleg sin kartposisjon til ein webserver, og dermed får vi sanntidskartet over bussane.</p>
+
+    <p><b>Takk til</b><br/> <a href="https://www.difi.no/">Difi (Direktoratet for forvaltning og IKT)</a> som har lånt ut mobiltelefonar, SIM-kort og mobilabonnement, for å plassere i bussane.</p>
+    
+    <p>Og vi vil takke Nettbuss som har hjulpe oss, og plassert ut mobiltelefonar i sine bussar.</p>
+</div>    
+
+
+
+<!-- NOT NEEDED ?
+    <script src="//cdn.maptiks.com/maptiks-leaflet.min.js"></script>
+    <script>
+      maptiks.trackcode='fa121dbc-2bae-49fb-b676-029bfef4161a';
+    </script>
+  -->
+ 
+
+
+    <script>
+var laussnoEkspressen = [
+  {"type":"Feature",
+  "id":"1",
+  "geometry":{
+    "type":"Point",
+    "coordinates":[
+      "6.917943",
+      "61.339837"]    
+    },
+  "properties":{
+    "name": "Selseng bru",
+    "typeOfStop": "national"
+    }
+  },
+
+  {"type":"Feature",
+  "id":"2",
+  "geometry":{
+    "type":"Point",
+    "coordinates":[
+      "6.928619",
+      "61.323534"]    
+    },
+  "properties":{
+    "name": "Gunvordal",
+    "typeOfStop": "national"
+    }
+  },
+
+  {"type":"Feature",
+  "id":"3",
+  "geometry":{
+    "type":"Point",
+    "coordinates":[
+      "6.943254",
+      "61.322029"]    
+    },
+  "properties":{
+    "name": "Busslomme 1",
+    "typeOfStop": "local"
+    }
+  },
+
+  {"type":"Feature",
+  "id":"4",
+  "geometry":{
+    "type":"Point",
+    "coordinates":[
+      "6.974499",
+      "61.321365"]    
+    },
+  "properties":{
+    "name": "Busslomme 2",
+    "typeOfStop": "local"
+    }
+  },  
+
+  {"type":"Feature",
+  "id":"5",
+  "geometry":{
+    "type":"Point",
+    "coordinates":[
+      "6.988237",
+      "61.315966"]    
+    },
+  "properties":{
+    "name": "Busslomme 3",
+    "typeOfStop": "local"
+    }
+  },  
+
+  {"type":"Feature",
+  "id":"6",
+  "geometry":{
+    "type":"Point",
+    "coordinates":[
+      "6.993949",
+      "61.310236"]    
+    },
+  "properties":{
+    "name": "Busslomme 4",
+    "typeOfStop": "local"
+    }
+  },
+
+  {"type":"Feature",
+  "id":"7",
+  "geometry":{
+    "type":"Point",
+    "coordinates":[
+      "6.984101",
+      "61.289603"]    
+    },
+  "properties":{
+    "name": "Hodlekve Skisenter",
+    "typeOfStop": ""
+    }
+  },
+
+  ];
+
+    // Haldeplassar - enkeltvis
+    var haldeplassar = new L.featureGroup();
+    for (i = 0; i < laussnoEkspressen.length; i++) {
+      var stop = laussnoEkspressen[i];
+      var marker = L.marker(L.latLng(stop["geometry"]["coordinates"][1], stop["geometry"]["coordinates"][0]));
+      var popUpText = "<b>" + stop.properties.name + "</b><br/>";
+      if (stop.properties.typeOfStop == "national") {
+        popUpText += "Vanleg haldeplass.";
+      } else if (stop.properties.typeOfStop == "local") {
+        popUpText += "Ikkje vanleg haldeplass. Kun køyrt<br/>\nav Laussnøekspressen.";
+      }
+      marker.bindPopup(popUpText);
+      haldeplassar.addLayer(marker);
+    }
+
+
+    var started = false;
+    var mNow = moment();
+
+    var total, monitored, onTime, delayed, active, resetCount;
+    var first, updated, nochange;
+    var errors = 0;
+
+    function resetCounters() {
+      total = 0;
+      monitored = 0;
+      onTime = 0;
+      delayed = 0;
+      active = 0;
+
+      first = 0;
+      updated = 0;
+      nochange = 0;
+
+      resetCount = false;
+    };
+
+    resetCounters();
+
+    // basert på:
+    // http://stackoverflow.com/a/8212878/2252177
+    function millisecondsToStr(milliseconds, nulltext) {
+
+        function numberEnding (number) {
+            return (number > 1) ? 'ar' : '';
+        }
+
+        var temp = Math.floor(milliseconds / 1000);
+        var years = Math.floor(temp / 31536000);
+        if (years) {
+            return years + ' år';
+        }
+
+        var days = Math.floor((temp %= 31536000) / 86400);
+        if (days) {
+            return days + ' dag' + numberEnding(days);
+        }
+        var hours = Math.floor((temp %= 86400) / 3600);
+        if (hours) {
+            if (hours > 1) {
+              return hours + ' timar';
+            } else {
+              return hours + ' time';
+            }
+        }
+        var minutes = Math.floor((temp %= 3600) / 60);
+        if (minutes) {
+            return minutes + ' minutt';
+        }
+        var seconds = temp % 60;
+        if (seconds) {
+            return seconds + ' sekund';
+        }
+        return nulltext; //'just now' //or other string you like;
+    }
+
+    // Base maps
+    mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+    translink = '<a href="http://thunderforest.com/">Thunderforest</a>';
+    var OSMtransport = L.tileLayer(
+    'https://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=124c8beced1244c4bf0a6c2a17528ef4', {
+        attribution: '&copy; '+mapLink+' Contributors & '+translink,
+        maxZoom: 18,
+    });
+
+    var base_topo = new L.TileLayer.Kartverket('topo2');
+    var base_norgeskart = new L.TileLayer.Kartverket('norges_grunnkart');
+    var base_terreng = new L.TileLayer.Kartverket('terreng_norgeskart');
+    var base_norgeskart_graa = new L.TileLayer.Kartverket('norges_grunnkart_graatone');
+    var base_matrikkel = new L.TileLayer.Kartverket('matrikkel_bakgrunn');
+    var base_enkelt =  new L.TileLayer.Kartverket('egk');
+
+    // Sjølve kartet. Layers er dei som er skrudd på når ein opnar kartet
+    var map = L.map('map', {
+      // layers: [OSMtransport] // base_norgeskart
+      layers: [base_topo] // base_norgeskart
+    });
+
+    // URL-hash
+    var hash = new L.Hash(map);
+
+    // Markers
+    var darkredMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'darkred'
+    });
+
+    var darkredSpinMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'darkred',
+      spin: 'true'
+    });
+
+    var redMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'red'
+    });
+
+    var redSpinMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'red',
+      spin: 'true'
+    });
+
+    var yellowMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'orange'
+    });
+
+    var yellowSpinMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'orange',
+      spin: 'true'
+    });
+
+    var greenMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'green'
+    });
+
+    var greenSpinMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'green',
+      spin: 'true'      
+    });     
+
+    var blueMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'blue'
+    });        
+
+    var grayMarker = L.AwesomeMarkers.icon({
+      prefix: 'fa',
+      icon: 'bus',
+      markerColor: 'lightgray'
+    });   
+
+    var lineGroups = {};
+
+    function detectIcon(icon) {
+      return icon.options.markerColor;
+      /*
+      switch(icon.options)
+      if (icon.options.markerColor == grayMarker) {
+        return "gray";
+      } else if (icon == greenMarker) {
+        return "green";
+      } else if (icon == yellowMarker) {
+        return "yellow";
+      } else if (icon == redSpinMarker) {
+        return "redspin";
+      } else if (icon == redMarker) {
+        return "red";
+      } else if (icon == blueMarker) {
+        return "blue";
+      } else {
+        return "unknown";
+      }
+      */
+    }
+
+    function setIconIfNeeded(layer, icon) {
+      // console.log("alt " + layer.feature.properties.id + ": " + layer.options.alt 
+      //   + " " + icon.options.markerColor);
+      // console.log(icon);
+      if (!layer.options.alt) {
+        first++;
+        // console.log("first");
+        // console.log("first-timer: " + icon.options.markerColor);
+        layer.setIcon(icon);
+        // console.log("before: " + layer.options.alt);
+        layer.options.alt = icon.options.markerColor;
+        // console.log("after: " + layer.options.alt);
+      } else if (layer.options.alt !== icon.options.markerColor) {
+        // console.log("update");
+        updated++;
+        // console.log(layer);
+        // console.log(layer.options.alt);
+        // console.log("new icon: " + layer.options.alt + " --> " + icon.options.markerColor);
+        layer.setIcon(icon);
+        layer.options.alt = icon.options.markerColor;
+        // console.log("set new icon.");
+      } else {
+        nochange++;
+        // console.log("unchanged");
+        // console.log("no need for new icon.");
+      }
+    }
+
+    function setMarker(layer, speed, lastRecordedDiff, batteriStatus, caller) {
+      /*
+      console.log("---------------");
+      console.log("layer: ");
+      console.log(layer);
+      console.log("speed: " + speed);
+      console.log("lastRecordedDiff: " + lastRecordedDiff);
+      console.log("batteriStatus: " + batteriStatus);
+      console.log("caller: " + caller);
+      */
+
+      if (caller == "onEachFeature") { // eller "calculateIcon"
+        // return;
+      }
+
+      if (lastRecordedDiff > 14000) // dersom meir enn 14 sek. sidan posisjon registrert
+        layer.setOpacity(0.5);
+      else {
+        layer.setOpacity(1.0);
+      }
+
+      if (lastRecordedDiff > 60000) { // dersom meir enn 1 min. sidan posisjon registrert
+        setIconIfNeeded(layer, grayMarker);
+        return;
+      }
+
+
+
+      setIconIfNeeded(layer, greenMarker);
+    }
+
+    function showDemoData() {
+      realtime.setUrl('buses_geojson_cached.php?demo=1');
+      $("#legendBottom").html("<b>NB!</b> Viser gamle posisjonar frå historiske data, ikkje noverande posisjonar. 5x av vanleg fart.<br/>\n");
+              
+      ga('send', 'event', 'click', 'showDemoData');
+            
+    }
+
+    function calculateIcon(layer, feature) {
+      // TODO: korrigere for at lastRecordet er eit øyeblikk i framtida.
+      var lastRecorded = moment.unix(feature.properties.time);
+      // var lastRecorded = moment(parseInt(feature.properties.time) * 1000);
+      
+      setMarker(
+        layer, 
+        layer.feature.properties.speed, 
+        moment().diff(lastRecorded),
+        layer.feature.properties.battery,
+        "calculateIcon"
+        );
+    }
+
+    var realtime = L.realtime(
+    {
+      url: 'buses_geojson_cached.php',
+      type: 'json',
+      crossOrigin: false,
+      error: function (err) {
+        // realtime.stop();
+        errors++;
+        $("#legendTop").html(
+          '<b>Feil</b> ved lasting av data. Prøver igjen (' + errors + ').<br/>\n'
+          );
+        $("#forklaring").hide();
+        $("#legendBottom").html('');
+        
+        ga('send', 'event', 'refresh', 'error');
+      }
+    }, 
+    {
+      interval: 5 * 1000,
+      filter: function (feature, layer) {
+                            return (feature.geometry.coordinates[1] > 61.25)
+                },
+      onEachFeature: function(feature, layer) {
+        mNow = moment();
+        if (resetCount)
+          resetCounters();
+
+        var popuptext = '';
+
+        total++;
+        monitored++;
+
+        // Logikk for popuptext på ikonet
+        popuptext += "<b>Buss " 
+        + feature.properties.id
+        + "</b><br/>\n";
+
+        // if (feature.properties.MonitoredCall.StopPointName)
+        //   popuptext += "Neste haldeplass: " + feature.properties.MonitoredCall.StopPointName + "<br/>\n";
+
+        var lastRecorded = moment.unix(feature.properties.time);
+
+        // TODO: korrigere for at lastRecordet er eit øyeblikk i framtida.
+        var lastRecordedDiff = mNow.diff(lastRecorded);
+        if (lastRecordedDiff < 0) lastRecordedDiff = 0;
+        var batteriStatus = parseInt(feature.properties.battery);
+
+        var speed_mps = feature.properties.speed;
+        var speed_kmh = parseFloat(speed_mps * 3.6).toFixed(0);
+
+        popuptext += "<span id='timeSincePosition-"
+          + feature.properties.id + "'>"
+          + millisecondsToStr(lastRecordedDiff, '0 sekund') + "</span> gammal posisjon<br/>\n";
+    
+        popuptext += "Fart: " 
+          + "<span id='speed-"
+          + feature.properties.id + "'>"
+          + speed_kmh + "</span> km/t<br/>\n";
+        popuptext += "Retning: " 
+          + "<span id='direction-"
+          + feature.properties.id + "'>"        
+          + feature.properties.direction + "</span>° "
+          + "<span id='directionArrow-" + feature.properties.id + "'>"
+            + "<i class=\"fa fa-arrow-up fa-rotate-" 
+            + Math.round(feature.properties.direction / 45) * 45
+            + "\" style=\"float: none;\" aria-hidden=\"true\"></i>"
+          + "</span><br/>\n";
+
+        
+        if (started) {
+          var layerz = realtime.getLayer(feature.id);
+          // layerz.unbindPopup();
+          if (layerz) { // check if item exists or not
+            layerz.setPopupContent(popuptext);
+          } else { // new item
+            layer.bindPopup(popuptext);
+          }
+        }
+        else {
+          layer.bindPopup(popuptext);
+        }
+
+        if (mNow.diff(lastRecorded) <= 120000) // rapportert siste 2 min. == aktiv
+          active++;
+
+        setMarker(layer, feature.properties.speed, mNow.diff(lastRecorded), batteriStatus, "onEachFeature");
+      }
+    });
+
+    realtime.getAttribution = function() { return 'Laussnøekspressen'; };
+    realtime.addTo(map);
+
+    realtime.on('update', function(e) {
+
+      // console.dir(e);
+
+      // Set map-view to fit markers, if map-hash not in use 
+        if (!started) {
+          // Sjekkar om map-hash er i bruk
+          if (!L.Hash.parseHash(location.hash)) {
+                        map.fitBounds(haldeplassar.getBounds(), {maxZoom: 16});
+                        }
+        }
+
+        started = true;
+        resetCount = true;
+        errors = 0;
+
+        // Oppdatere markørar
+        Object.keys(e.features).forEach(function(el) {
+          var theLayer = realtime.getLayer(el);
+          var theFeature = e.features[el];
+
+          var lastRecorded = moment.unix(theFeature.properties.time);
+          var lastRecordedDiff = moment().diff(lastRecorded);
+          if (lastRecordedDiff < 0) lastRecordedDiff = 0;
+
+          var idn = theFeature.properties.id;
+          $("#timeSincePosition-" + idn).text(millisecondsToStr(lastRecordedDiff, '0 sekund'));
+
+          var speed_mps = theFeature.properties.speed;
+          var speed_kmh = parseFloat(speed_mps * 3.6).toFixed(0);
+
+          $("#speed-" + idn).text(speed_kmh);
+          $("#direction-" + idn).text(theFeature.properties.direction);
+          $("#directionArrow-" + idn).html(
+            "<i class=\"fa fa-arrow-up fa-rotate-" 
+            + Math.round(theFeature.properties.direction / 45) * 45
+            + "\" style=\"float: none;\" aria-hidden=\"true\"></i>"
+            );
+
+
+          // console.log(updated);
+
+          // console.log(theLayer);
+          // console.log(theLayer.options.icon === greenMarker);
+          setTimeout(function(){
+            
+            setMarker(
+              theLayer, 
+              theLayer.feature.properties.speed, 
+              lastRecordedDiff,
+              theLayer.feature.properties.battery,
+              "realtimeOnUpdate"
+              );
+
+            // calculateIcon(theLayer, theFeature)
+          }, 2500); // wait for move-animation (CSS-based)
+        });
+
+        // Sjekkar om ein har fått data eller ikkje
+        if (realtime.getLayers().length > 0) {
+          ga('send', 'event', 'refresh', 'success');
+setTimeout(function(){
+          // Tekst dersom det er aktiv sporing på bussar
+          $("#legendTop").html(
+            "<b>Sanntidskart for Laussnøekspressen</b><br>\n"
+            + "<b>Lau. 10/3</b>: avgang frå Selseng kl. 12.00, 13.10, 14.20 og 15.30<br/>\n"
+            + "Viser <b>" + active + "</b> buss med aktiv sporing. " // was: monitored
+            + '<a href="http://www.sogndalskisenter.no/laussnekspressen/">Les meir <i class="fa fa-external-link" style="float: none;" aria-hidden="true"></i></a><br/>\n'
+            // + '<a href="https://www.fjellsportfestivalen.no/transport/#block-yui_3_17_2_6_1519204147500_7351">Les meir <i class="fa fa-external-link" style="float: none;" aria-hidden="true"></i></a><br/>\n'
+            // + '<b>NB!</b> Viser historiske data. 5x av vanleg fart.<br/>\n'
+                   
+
+            // + "<b>" + delayed + "</b> meir enn 5 minutt forseinka" + "<br>\n"
+            // + "<b>" + active + "</b> køyretøy som har rapportert<br/>&nbsp; posisjon innan siste 5 minutt" + "<br><br>\n"
+            // + "<b>" + "<a href=\"#\" onClick=\"$('#forklaring').toggle();\">Vis/skjul forklaring på markørar</a></b><br/>"
+
+            );
+          // $("#forklaring").html(
+          //   "- Grøn" + " - i rute (maks 2 min. forseinking) <br/>\n"
+          //   + "- Gul" + " - meir enn 2 minutt forseinka<br/>\n"
+          //   + "- Mørk raud" + " - over 5 minutt forseinka<br/>\n"
+          //   + "- Raud" + " - over 10 minutt forseinka<br/>\n"
+          //   + "- Blå" + " - monitored, men Delay er ikkje angitt.<br/>\n"
+          //   + "- Grå" + " - ikkje monitored<br/>\n"                              
+          //   + "- Grå og gjennomsiktig" + " - ikkje monitored, <br/>&nbsp; meir enn 5 min. sidan siste posisjon.\n" 
+          //   + "<br/>"
+          //   );
+
+}, 1000);
+//  Beta - Les meir om appen<i class=\"fa fa-external-link\" style=\"float: none; margin-left: 5px;\" aria-hidden=\"true\"></i></a>   
+        } else {
+          
+          ga('send', 'event', 'refresh', 'nodata');
+          // Tekst dersom det ikkje er nokon aktive bussar
+          $("#legendTop").html(
+            "<b>Sanntidskart for Laussnøekspressen</b><br>\n"
+          + '<b>Ingen bussar</b> med aktiv sporing akkurat no.<br/>\n'
+          + "<b>Lau. 10/3</b>: avgang frå Selseng kl. 12.00, 13.10, 14.20 og 15.30<br/>\n"
+          + '<a href="http://www.sogndalskisenter.no/laussnekspressen/">Les meir på Sogndalskisenter.no <i class="fa fa-external-link fa-fw fai" aria-hidden="true"></i></a><br/>\n'
+          + 'Følg <a href="https://www.facebook.com/hodlekve.no/">skisenteret si Facebook-side <i class="fa fa-external-link fa-fw fai" aria-hidden="true"></i></a> for beskjed om når Laussnøekspressen går.<br/>\n'          
+          // + '<p>Første avgang frå Selseng ca. kl. 11, siste buss 15.45 frå Selseng og 16.30 frå Rindabotn.</p>'
+          // + '<p>Søndag 25/2: No er bussane ferdige for i dag. Takk for festivalen i år!</p>'
+          // + '<p><a href="https://www.fjellsportfestivalen.no/transport/#block-yui_3_17_2_6_1519204147500_7351">Les om Laussnøekspressen på Fjellsportfestivalen.no</a></p>\n'
+          // + "Bussane dukkar opp i kartet rundt kl. 10." + "<br/>\n"  
+          );
+          $("#forklaring").hide();
+          $("#legendBottom").html('<a href="#" onClick="showDemoData()">Vis demo-data</a><br/>\n');
+        }
+    });
+
+    // Legg til boks med tekst nede til venstre i kartet
+    var legend = L.control({position: 'bottomleft'});
+    legend.onAdd = function (map) {
+      var div = L.DomUtil.create('div', 'info legend');
+      var tekst = '<div id="legendTop"><i class="fa fa-spinner fa-spin" style="float: none; text-align: center;"></i>Lastar informasjon...</div>'
+        + '<div id="forklaring"></div>\n'
+        + '<div id="legendBottom"></div>';
+      div.innerHTML = tekst;
+      return div;
+    };
+    legend.addTo(map);
+
+    haldeplassar.addTo(map);
+
+    // Set opp Layer-kontroll
+    var baseLayers = {
+      "Transport map (OpenStreetMap)": OSMtransport,
+      "Topografisk kart (Kartverket)": base_topo,
+      "Grunnkart (Kartverket)": base_norgeskart,
+      "Terrengmodell (Kartverket)": base_terreng,
+      "Grått grunnkart (Kartverket)": base_norgeskart_graa,
+      "Eiendomskart (Kartverket)": base_matrikkel,
+      "Enkelt kart (Kartverket)": base_enkelt
+    };
+    var overlays = {
+      "Sanntidsposisjonar for Laussnøekspressen": realtime,
+      "Haldeplassar": haldeplassar
+    };
+
+    var layerControl = L.control.layers(
+      baseLayers,
+      overlays
+    );
+    layerControl.addTo(map);
+
+
+    // jQuery-dialogs
+    $('#dialog-about').dialog({
+        modal: false, autoOpen: false, closeOnEsc: true, draggable: false,
+        position: { my:'left top', at:'left+5 top+5', or:'#map' }
+    });
+    $('#dialog-help').dialog({
+        modal: true, autoOpen: false, closeOnEsc: false, draggable: false,
+    });
+
+    // controls to toggle dialogs
+    new L.Control.jQueryDialog({
+        dialogId: 'dialog-help',
+        tooltip: "Korleis bruke denne tingen",
+        iconClass: 'fa fa-question-circle'
+    }).addTo(map);
+
+    var locateOptions = ({
+      setView: "once",
+      flyTo: "true",
+      locateOptions: {
+        enableHighAccuracy: "true",
+        maxZoom: 15
+      }
+    });
+
+    L.control.locate(locateOptions).addTo(map);
+
+
+// NB! Does not log or send the actual position
+function logLocate(e) {
+  ga('send', 'event', 'locate', e.type);  // e.type is either locationerror or locationfound
+}
+
+map.on('locationerror', logLocate);
+map.on('locationfound', logLocate);
+
+
+    $('.leaflet-control-layers').hide();
+
+
+
+
+// map.fitBounds(haldeplassar.getBounds(), {maxZoom: 16});
+
+  </script>
+
+  </body>
+</html>

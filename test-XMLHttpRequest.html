@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script>
+        var request = new XMLHttpRequest();
+
+        request.open('GET', 'https://ghibliapi.herokuapp.com/films', true);
+        request.setRequestHeader("Client-Identifier", "78fed72c6ee33a442b3d3060e095829a");
+        request.onload = function () {
+
+            // Begin accessing JSON data here
+            var data = JSON.parse(this.response);
+
+            if (request.status >= 200 && request.status < 400) {
+                var statusDiv = document.getElementById("status");
+                statusDiv.innerHTML += "YEAH got data";
+            } else {
+                var statusDiv = document.getElementById("status");
+                statusDiv.innerHTML += "Errror";
+
+            }
+        }
+
+        request.send();
+
+    </script>
+</head>
+
+
+<body>
+
+
+
+    <body>
+
+        <h1>test-XMLHttpRequest</h1>
+        <p>Test for getting data from https://developer.oslobysykkel.no/api</p>
+        Test result:
+        <div id="status"></div>
+
+
+        <p>If the URL is https://ghibliapi.herokuapp.com/films then it works.</p>
+        <p>If it is https://oslobysykkel.no/api/v1/stations then it does not work</p>
+
+        <p>this curl works:</p>
+        <p> curl -H "Client-Identifier: 78fed72c6ee33a442b3d3060e095829a" \ https://oslobysykkel.no/api/v1/stations
+        </p>
+
+    </body>
+
+</body>
+
+</html>

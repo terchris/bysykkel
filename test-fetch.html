@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+
+
+
+    <script>
+
+
+        //const url = 'https://randomuser.me/api/?results=10';
+        const url = 'https://oslobysykkel.no/api/v1/stations';
+
+        fetch(url, { headers: { 'Client-Identifier': '78fed72c6ee33a442b3d3060e095829a' } })
+
+            .then(function (data) {
+
+                var statusDiv = document.getElementById("status");
+                statusDiv.innerHTML += "YEAH got data";
+
+            })
+            .catch(function (error) {
+                var statusDiv = document.getElementById("status");
+                statusDiv.innerHTML += "Errror";
+                console.log(JSON.stringify(error));
+            });
+
+    </script>
+</head>
+
+
+<body>
+
+
+
+    <body>
+
+        <h1>test-fetch</h1>
+        <p>TesT for getting data from https://developer.oslobysykkel.no/api</p>
+        Test result:
+        <div id="status"></div>
+
+
+        <p>If the URL is https://ghibliapi.herokuapp.com/films then it works.</p>
+        <p>If it is https://oslobysykkel.no/api/v1/stations then it does not work</p>
+
+        <p>this curl works:</p>
+        <p> curl -H "Client-Identifier: 78fed72c6ee33a442b3d3060e095829a" \ https://oslobysykkel.no/api/v1/stations
+        </p>
+
+    </body>
+
+</body>
+
+</html>

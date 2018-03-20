@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>bysykkel_stations - Leaflet</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js" integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+        crossorigin=""></script>
+
+
+
+
+</head>
+
+<body>
+
+
+
+    <div id="mapid" style="width: 1200px; height: 800px;"></div>
+    <script>
+
+
+        var stations = [
+            {
+                "id": 157,
+                "in_service": true,
+                "title": "Nylandsveien",
+                "subtitle": "mellom Norbygata og Urtegata",
+                "number_of_locks": 30,
+                "center": {
+                    "latitude": 59.91562,
+                    "longitude": 10.762248
+                },
+                "bounds": [
+                    {
+                        "latitude": 59.915418602160436,
+                        "longitude": 10.762068629264832
+                    },
+                    {
+                        "latitude": 59.91565254992276,
+                        "longitude": 10.762672126293182
+                    },
+                    {
+                        "latitude": 59.915807169665264,
+                        "longitude": 10.762433409690855
+                    },
+                    {
+                        "latitude": 59.91557994562126,
+                        "longitude": 10.761821866035461
+                    },
+                    {
+                        "latitude": 59.915418602160436,
+                        "longitude": 10.762068629264832
+                    }
+                ]
+            },
+            {
+                "id": 158,
+                "in_service": true,
+                "title": "Bentsebrugata",
+                "subtitle": "rett over busstoppet",
+                "number_of_locks": 24,
+                "center": {
+                    "latitude": 59.939192,
+                    "longitude": 10.759168
+                },
+                "bounds": [
+                    {
+                        "latitude": 59.938998693156904,
+                        "longitude": 10.758989453315735
+                    },
+                    {
+                        "latitude": 59.939057810485,
+                        "longitude": 10.759515166282652
+                    },
+                    {
+                        "latitude": 59.93939638951557,
+                        "longitude": 10.759338140487671
+                    },
+                    {
+                        "latitude": 59.93932383715719,
+                        "longitude": 10.758823156356812
+                    },
+                    {
+                        "latitude": 59.938998693156904,
+                        "longitude": 10.758989453315735
+                    }
+                ]
+            },
+            {
+                "id": 159,
+                "in_service": true,
+                "title": "Hans Nielsen Hauges plass",
+                "subtitle": "Mellom Åsengata og Nordkappgata",
+                "number_of_locks": 21,
+                "center": {
+                    "latitude": 59.939262,
+                    "longitude": 10.774296
+                },
+                "bounds": [
+                    {
+                        "latitude": 59.93911558413561,
+                        "longitude": 10.774433612823486
+                    },
+                    {
+                        "latitude": 59.939206946912556,
+                        "longitude": 10.77458918094635
+                    },
+                    {
+                        "latitude": 59.93938967171128,
+                        "longitude": 10.774173438549042
+                    },
+                    {
+                        "latitude": 59.93929830943778,
+                        "longitude": 10.773993730545044
+                    },
+                    {
+                        "latitude": 59.93911558413561,
+                        "longitude": 10.774433612823486
+                    }
+                ]
+            }
+        ];
+
+        var bikes_on_stations =  [
+        {
+            "id": 178,
+            "availability": {
+                "bikes": 0,
+                "locks": 12
+            }
+        },
+        {
+            "id": 167,
+            "availability": {
+                "bikes": 0,
+                "locks": 18
+            }
+        },
+        {
+            "id": 160,
+            "availability": {
+                "bikes": 0,
+                "locks": 25
+            }
+        }
+
+        ];
+
+        var url = 'http://localhost:5500/bysykkel_stations.json';
+
+        fetch(url)
+            .then((resp) => resp.json())
+            .then(function (data) {
+                stations = data.stations;
+
+                // display the stations on the map
+                for (i = 0; i < stations.length; i++) {
+                    station = stations[i];
+
+                    marker = L.marker(L.latLng(station.center.latitude, station.center.longitude));
+                    popUpText = "<b>" + station.title + "</b> </br>Låser:" + station.number_of_locks;
+                    marker.bindPopup(popUpText);
+                    marker.addTo(mymap);
+                    //console.log("FILE: popUpText:" + popUpText);
+                }
+            })
+            .catch(function (error) {
+                console.log(JSON.stringify(error));
+            });
+
+
+        url = 'http://localhost:5500/bysykkel_bikes_on_stations.json';
+        fetch(url)
+            .then((resp) => resp.json())
+            .then(function (data) {
+                bikes_on_stations = data.stations;
+                console.log("bikes on stations:"+ bikes_on_stations.length);
+            })
+            .catch(function (error) {
+                console.log(JSON.stringify(error));
+            });
+
+
+
+
+        var LeafIcon = L.Icon.extend({
+            options: {
+                shadowUrl: 'leaf-shadow.png',
+                iconSize: [26, 26],
+                shadowSize: [50, 64],
+                iconAnchor: [22, 94],
+                shadowAnchor: [4, 62],
+                popupAnchor: [-3, -76]
+            }
+        });
+
+
+        var station, marker, popUpText;
+
+
+
+
+        var mymap = L.map('mapid').setView([59.93, 10.77], 12);
+
+
+
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+            maxZoom: 18,
+            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+            id: 'mapbox.streets'
+        }).addTo(mymap);
+
+
+
+
+
+
+
+
+
+    </script>
+
+
+
+</body>
+
+</html>
